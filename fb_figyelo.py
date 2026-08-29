@@ -65,12 +65,44 @@ def write_state(state):
         json.dump(state, f, ensure_ascii=False, indent=2)
 
 
-def get_latest_post(page_id):
+def get_page_tokens():
+    """Lekeri az osszes olyan oldal SAJAT access tokenjet, amihez a
+    rendszerfelhasznalonak hozzaferese van. Ez szukseges, mert a
+    rendszerfelhasznalo sajat tokenje onmagaban nem mindig eleg egy
+    adott oldal posztjainak lekerdezesehez."""
+    tokens = {}
+    url = f"https://graph.facebook.com/{GRAPH_API_VERSION}/me/accounts"
+    params = {
+        "fields": "id,name,access_token",
+        "limit": 100,
+        "access_token": FB_ACCESS_TOKEN,
+    }
+
+    while url:
+        response = requests.get(url, params=params, timeout=15)
+        data = response.json()
+
+        if "error" in data:
+            print(f"HIBA az oldal-tokenek lekeresekor: {data['error'].get('message')}")
+            break
+
+        for entry in data.get("data", []):
+            tokens[entry["id"]] = entry.get("access_token")
+
+        # lapozas, ha 100-nal tobb oldal lenne
+        next_url = data.get("paging", {}).get("next")
+        url = next_url
+        params = {}  # a next_url mar tartalmazza az osszes parametert
+
+    return tokens
+
+
+def get_latest_post(page_id, page_token):
     url = f"https://graph.facebook.com/{GRAPH_API_VERSION}/{page_id}/posts"
     params = {
         "fields": "id,message,created_time,permalink_url,attachments{media_type}",
         "limit": 1,
-        "access_token": FB_ACCESS_TOKEN,
+        "access_token": page_token,
     }
     response = requests.get(url, params=params, timeout=15)
     data = response.json()
@@ -116,11 +148,20 @@ def main():
         print("HIBA: FB_ACCESS_TOKEN nincs beallitva.")
         sys.exit(1)
 
+    page_tokens = get_page_tokens()
+    print(f"[debug] {len(page_tokens)} oldal-token erkezett meg.")
+
     state = read_state()
     changed = False
 
     for page_name, page_id in PAGES.items():
-        latest = get_latest_post(page_id)
+        page_token = page_tokens.get(page_id)
+        if not page_token:
+            print(f"HIBA a(z) {page_name} ({page_id}) oldalnal: nincs sajat token, "
+                  f"valoszinuleg nincs hozzarendelve a rendszerfelhasznalohoz.")
+            continue
+
+        latest = get_latest_post(page_id, page_token)
         if latest is None:
             continue
 
