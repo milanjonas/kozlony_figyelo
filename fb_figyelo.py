@@ -35,9 +35,22 @@ PAGES = {
 GRAPH_API_VERSION = "v26.0"
 STATE_FILE = "fb_last_posts.json"
 
-FB_ACCESS_TOKEN = os.environ.get("FB_ACCESS_TOKEN")
-TELEGRAM_TOKEN = os.environ.get("TELEGRAM_TOKEN")
-TELEGRAM_CHAT_ID = os.environ.get("TELEGRAM_CHAT_ID")
+def _clean(value):
+    """Levagja a kornyezeti valtozok elejerol/vegerol az esetleges
+    szokozoket vagy sortoreseket, amik masolaskor bekerulhettek."""
+    return value.strip() if value else value
+
+
+FB_ACCESS_TOKEN = _clean(os.environ.get("FB_ACCESS_TOKEN"))
+TELEGRAM_TOKEN = _clean(os.environ.get("TELEGRAM_TOKEN"))
+TELEGRAM_CHAT_ID = _clean(os.environ.get("TELEGRAM_CHAT_ID"))
+
+# Debug info: a token hosszat kiirjuk (magat a tokent SOHA nem irjuk ki),
+# hogy lassuk, tenyleg a vart hosszusagu erkezett-e meg.
+if FB_ACCESS_TOKEN:
+    print(f"[debug] FB_ACCESS_TOKEN hossza: {len(FB_ACCESS_TOKEN)} karakter")
+else:
+    print("[debug] FB_ACCESS_TOKEN ures vagy hianyzik!")
 
 
 def read_state():
