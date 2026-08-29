@@ -42,9 +42,9 @@ def _clean(value):
 
 
 FB_ACCESS_TOKEN = _clean(os.environ.get("FB_ACCESS_TOKEN"))
-   TELEGRAM_TOKEN = _clean(os.environ.get("TELEGRAM_TOKEN"))
-   # Kulon Telegram cset/csoport a Facebook ertesiteseknek (nem a Kozlonyos csoport)
-   TELEGRAM_CHAT_ID = _clean(os.environ.get("FB_TELEGRAM_CHAT_ID"))
+TELEGRAM_TOKEN = _clean(os.environ.get("TELEGRAM_TOKEN"))
+# Kulon Telegram cset/csoport a Facebook ertesiteseknek (nem a Kozlonyos csoport)
+TELEGRAM_CHAT_ID = _clean(os.environ.get("FB_TELEGRAM_CHAT_ID"))
 
 # Debug info: a token hosszat kiirjuk (magat a tokent SOHA nem irjuk ki),
 # hogy lassuk, tenyleg a vart hosszusagu erkezett-e meg.
